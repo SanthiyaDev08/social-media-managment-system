@@ -13,7 +13,10 @@ const adminMiddleware = require('./middlewares/adminMiddleware');
 const app = express();
 
 app.use(cors({
-    origin: process.env.FRONTEND_URL || '*',
+    origin: function(origin, callback) {
+        // Allow all origins dynamically to prevent Edge/Safari strict CORS issues
+        return callback(null, true);
+    },
     credentials: true
 }));
 app.use(express.json());
@@ -23,6 +26,11 @@ app.use('/api/posts', postRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/interactions', interactionRoutes);
 app.use('/api/admin', authMiddleware, adminMiddleware, adminRoutes);
+
+// Root route for health check / confirmation
+app.get('/', (req, res) => {
+    res.send('Social Media API is running successfully!');
+});
 
 app.use((err, req, res, next) => {
     console.error(err.stack);
